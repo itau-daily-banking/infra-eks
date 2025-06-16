@@ -6,24 +6,24 @@ variable "aws_region" {
 
 variable "default_vpc_id" {
   description = "Default VPC ID"
-  type = string
-  default = "vpc-0e69c256e36852d32"
+  type        = string
+  default     = "vpc-0e69c256e36852d32"
 }
 
 variable "aws_subnet_1a_id" {
   description = "AWS subnet-1a ID"
-  type = string
-  default = "subnet-02183af4aefcfc723"
+  type        = string
+  default     = "subnet-02183af4aefcfc723"
 }
 
 variable "aws_subnet_1b_id" {
   description = "AWS subnet-1b ID"
-  type = string
-  default = "subnet-03f723843f893b9c9"
+  type        = string
+  default     = "subnet-03f723843f893b9c9"
 }
 
 variable "aws_account_id" {
   description = "AWS account ID"
-  type = string
-  default = "011706314791"
+  type        = string
+  default     = "011706314791"
 }

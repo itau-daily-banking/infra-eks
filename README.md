@@ -1,84 +1,80 @@
-# EKS Infrastructure for Daily Banking Case
+# Infraestrutura EKS para Sistema de Renegociação de Dívidas
 
 ## Visão Geral
 
-Este repositório contém a infraestrutura como código (IaC) para implantação de um cluster Amazon EKS (Elastic Kubernetes Service) para o caso Daily Banking. A infraestrutura é gerenciada usando Terraform.
+Este repositório contém a infraestrutura como código (IaC) para provisionar e gerenciar um cluster Amazon EKS (Elastic Kubernetes Service) que suporta o sistema de desafio t[ecnico do mercado livre. A infraestrutura é gerenciada através do Terraform, permitindo uma implantação consistente e reproduzível do ambiente.
+
+## Estrutura do Repositório
+
+### Arquivos Principais
+
+- `eks.tf`: Configuração principal do cluster EKS
+- `vpc.tf`: Definição da rede virtual e subnets
+- `backend.tf`: Configuração do backend do Terraform (S3)
+- `data.tf`: Fontes de dados do Terraform
+- `variables.tf`: Definição de variáveis utilizadas na infraestrutura
+
+### Configurações Kubernetes
+
+- `ingress-controller.yaml`: Configuração do controlador de ingress
+- `irsa.yaml`: Configuração de IAM Roles for Service Accounts
+
+### CI/CD
+
+- `.github/workflows/`: Diretório contendo os workflows de GitHub Actions
+  - `tf_deploy.yaml`: Workflow para deploy da infraestrutura
+  - `tf_destroy.yaml`: Workflow para destruição da infraestrutura
 
 ## Componentes da Infraestrutura
 
 ### Cluster EKS
 
-- Nome do Cluster: `dailybanking-case`
-- Grupo de Nodes: `appNodedailybanking-case`
-- Tipo de Instância: t3.large (instâncias SPOT)
-- Configuração do Grupo de Nodes:
-  - Tamanho Desejado: 3 nodes
-  - Tamanho Mínimo: 1 node
-  - Tamanho Máximo: 7 nodes
-  - Tipo de Capacidade: instâncias SPOT para otimização de custos
+- Cluster Kubernetes gerenciado pela AWS
+- Configurado com alta disponibilidade
+- Suporte a múltiplas zonas de disponibilidade
 
-### Configuração de Rede
+### Nodes
 
-- Utiliza VPC padrão em us-east-1
-- Duas sub-redes em diferentes zonas de disponibilidade:
-  - us-east-1a
-  - us-east-1b
-- Sub-redes devidamente marcadas para integração com EKS e ELB
+- Instâncias t3.large (SPOT)
+- Auto-scaling configurado (1-7 nós)
+- Disco de 20GB por nó
 
-### Roles e Políticas IAM
+### Rede
 
-1. Role do Cluster EKS (`roleEKS-2`)
+- VPC dedicada
+- Subnets públicas e privadas
+- NAT Gateway para acesso à internet
+- Security Groups configurados
 
-   - AmazonEKSClusterPolicy
-   - AmazonEKSVPCResourceController
-   - Política EC2 personalizada para descrição de instâncias
+### Segurança
 
-2. Role do Grupo de Nodes (`roleNodeEKS-2`)
+- IAM Roles e Policies
+- Provedor OIDC para autenticação
+- Políticas de segurança restritivas
 
-   - AmazonEKSWorkerNodePolicy
-   - AmazonEKS_CNI_Policy
-   - AmazonEC2ContainerRegistryReadOnly
-   - ElasticLoadBalancingFullAccess
-   - AmazonEC2FullAccess
+## Como Utilizar
 
-3. Role de Gerenciamento de Secrets (`roleNodeSecrets-2`)
-   - Política SNS personalizada para notificações
+### Pré-requisitos
 
-## Pré-requisitos
+1. Terraform instalado (versão 1.3.0 ou superior)
+2. Credenciais AWS configuradas
+3. Bucket S3 para estado do Terraform
+4. Acesso à AWS com permissões adequadas
 
-- AWS CLI configurado com credenciais apropriadas
-- Terraform instalado (versão 1.0.0 ou superior)
-- kubectl instalado
-- Permissões IAM da AWS para criar clusters EKS e recursos relacionados
+### Deploy
 
-## Uso
+1. Configure as variáveis de ambiente necessárias
+2. Execute o workflow de deploy via GitHub Actions
+3. Aguarde a conclusão do processo
 
-1. Inicializar o Terraform:
+### Manutenção
 
-```bash
-terraform init
-```
+- Atualizações do cluster via Terraform
+- Monitoramento via CloudWatch
+- Backups automáticos do estado
 
-2. Revisar as mudanças planejadas:
+## Monitoramento e Logs
 
-```bash
-terraform plan
-```
-
-3. Aplicar a infraestrutura:
-
-```bash
-terraform apply
-```
-
-4. Configurar kubectl:
-
-```bash
-aws eks update-kubeconfig --name dailybanking-case --region us-east-1
-```
-
-## Componentes Adicionais
-
-- Provedor OIDC configurado para IRSA (IAM Roles for Service Accounts)
-- Template de lançamento para instâncias node com suporte a IMDSv2
-- Configuração do controlador de ingress incluída
+- Métricas do CloudWatch
+- Logs do cluster
+- Monitoramento de recursos EC2

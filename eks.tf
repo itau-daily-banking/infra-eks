@@ -26,10 +26,10 @@ data "aws_iam_policy_document" "policyDocNodeEKS" {
   }
 }
 
-resource "aws_iam_policy" "policySnsSub-2" {
-  name        = "policySnsSub-2"
+resource "aws_iam_policy" "policySnsSubDaily" {
+  name        = "policySnsSubDaily"
   path        = "/"
-  description = "policySnsSub-2"
+  description = "policySnsSubDaily"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -45,32 +45,28 @@ resource "aws_iam_policy" "policySnsSub-2" {
   })
 }
 
-resource "aws_iam_policy" "policy_sqs_cancelamento" {
-  name        = "policy-sqs-cancelamento"
-  description = "Permite acesso ao SQS de cancelamento"
+resource "aws_iam_policy" "policySqsSubDaily" {
+  name        = "policySqsSubDaily"
+  path        = "/"
+  description = "policySqsSubDaily"
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
         Action = [
-          "sqs:SendMessage",
-          "sqs:ReceiveMessage",
-          "sqs:DeleteMessage",
-          "sqs:GetQueueAttributes",
-          "sqs:GetQueueUrl"
+          "sqs:*",
         ]
-        Resource = "arn:aws:sqs:us-east-1:011706314791:cancelamento-queue"
-      }
+        Effect   = "Allow"
+        Resource = "*"
+      },
     ]
   })
 }
 
 
-
-resource "aws_iam_role" "roleEKS-2" {
-  name               = "roleEKS-2"
+resource "aws_iam_role" "roleEKSDaily" {
+  name               = "roleEKSDaily"
   assume_role_policy = data.aws_iam_policy_document.policyDocEKS.json
 
   inline_policy {
@@ -89,13 +85,13 @@ resource "aws_iam_role" "roleEKS-2" {
   }
 }
 
-resource "aws_iam_role" "roleNodeEKS-2" {
-  name               = "roleNodeEKS-2"
+resource "aws_iam_role" "roleNodeEKSDaily" {
+  name               = "roleNodeEKSDaily"
   assume_role_policy = data.aws_iam_policy_document.policyDocNodeEKS.json
 }
 
-resource "aws_iam_role" "roleNodeSecrets-2" {
-  name = "roleNodeSecrets-2"
+resource "aws_iam_role" "roleNodeSecretsDaily" {
+  name = "roleNodeSecretsDaily"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -116,55 +112,54 @@ resource "aws_iam_role" "roleNodeSecrets-2" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "attach_policy_sqs_cancelamento" {
-  role       = aws_iam_role.roleNodeSecrets-2.name
-  policy_arn = aws_iam_policy.policy_sqs_cancelamento.arn
-}
-
-
 resource "aws_iam_role_policy_attachment" "policyEKSAmazonEKSClusterPolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-  role       = aws_iam_role.roleEKS-2.name
+  role       = aws_iam_role.roleEKSDaily.name
 }
 
 resource "aws_iam_role_policy_attachment" "policyEKSAmazonEKSVPCResourceController" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
-  role       = aws_iam_role.roleEKS-2.name
+  role       = aws_iam_role.roleEKSDaily.name
 }
 
-resource "aws_iam_role_policy_attachment" "policyroleNodeEKS-2" {
-  role       = aws_iam_role.roleNodeEKS-2.name
+resource "aws_iam_role_policy_attachment" "policyroleNodeEKSDaily" {
+  role       = aws_iam_role.roleNodeEKSDaily.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
 }
 
-resource "aws_iam_role_policy_attachment" "cniPolicyroleNodeEKS-2" {
-  role       = aws_iam_role.roleNodeEKS-2.name
+resource "aws_iam_role_policy_attachment" "cniPolicyroleNodeEKSDaily" {
+  role       = aws_iam_role.roleNodeEKSDaily.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
 }
 
-resource "aws_iam_role_policy_attachment" "ecrPolicyroleNodeEKS-2" {
-  role       = aws_iam_role.roleNodeEKS-2.name
+resource "aws_iam_role_policy_attachment" "ecrPolicyroleNodeEKSDaily" {
+  role       = aws_iam_role.roleNodeEKSDaily.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
-resource "aws_iam_role_policy_attachment" "elbPolicyroleNodeEKS-2" {
-  role       = aws_iam_role.roleNodeEKS-2.name
+resource "aws_iam_role_policy_attachment" "elbPolicyroleNodeEKSDaily" {
+  role       = aws_iam_role.roleNodeEKSDaily.name
   policy_arn = "arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess"
 }
 
 resource "aws_iam_role_policy_attachment" "sns_sub_policy_attachment" {
-  role       = aws_iam_role.roleNodeSecrets-2.name
-  policy_arn = aws_iam_policy.policySnsSub-2.arn
+  role       = aws_iam_role.roleNodeSecretsDaily.name
+  policy_arn = aws_iam_policy.policySnsSubDaily.arn
 }
 
-resource "aws_iam_role_policy_attachment" "ec2PolicyroleNodeEKS-2" {
-  role       = aws_iam_role.roleNodeEKS-2.name
+resource "aws_iam_role_policy_attachment" "sqs_sub_policy_attachment" {
+  role       = aws_iam_role.roleNodeSecretsDaily.name
+  policy_arn = aws_iam_policy.policySqsSubDaily.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ec2PolicyroleNodeEKSDaily" {
+  role       = aws_iam_role.roleNodeEKSDaily.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
 }
 
 resource "aws_eks_cluster" "clusterdailybanking-case" {
   name     = "dailybanking-case"
-  role_arn = aws_iam_role.roleEKS-2.arn
+  role_arn = aws_iam_role.roleEKSDaily.arn
 
   vpc_config {
     subnet_ids = [data.aws_subnet.subnet1.id, data.aws_subnet.subnet2.id]
@@ -179,7 +174,7 @@ resource "aws_eks_cluster" "clusterdailybanking-case" {
 resource "aws_eks_node_group" "appNodeGroupdailybanking-case" {
   cluster_name    = aws_eks_cluster.clusterdailybanking-case.name
   node_group_name = "appNodedailybanking-case"
-  node_role_arn   = aws_iam_role.roleNodeEKS-2.arn
+  node_role_arn   = aws_iam_role.roleNodeEKSDaily.arn
   subnet_ids      = [data.aws_subnet.subnet1.id, data.aws_subnet.subnet2.id]
 
   launch_template {
@@ -196,14 +191,14 @@ resource "aws_eks_node_group" "appNodeGroupdailybanking-case" {
   capacity_type = "SPOT"
 
   tags = {
-    "Name"                           = "eks-node-app"
+    "Name"                           = "eks-daily-node-app"
     "eks.amazonaws.com/capacityType" = "SPOT"
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.policyroleNodeEKS-2,
-    aws_iam_role_policy_attachment.cniPolicyroleNodeEKS-2,
-    aws_iam_role_policy_attachment.ec2PolicyroleNodeEKS-2,
+    aws_iam_role_policy_attachment.policyroleNodeEKSDaily,
+    aws_iam_role_policy_attachment.cniPolicyroleNodeEKSDaily,
+    aws_iam_role_policy_attachment.ec2PolicyroleNodeEKSDaily,
   ]
 }
 
