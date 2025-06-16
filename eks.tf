@@ -45,6 +45,29 @@ resource "aws_iam_policy" "policySnsSub-2" {
   })
 }
 
+resource "aws_iam_policy" "policy_sqs_cancelamento" {
+  name        = "policy-sqs-cancelamento"
+  description = "Permite acesso ao SQS de cancelamento"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:SendMessage",
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:GetQueueAttributes",
+          "sqs:GetQueueUrl"
+        ]
+        Resource = "arn:aws:sqs:us-east-1:011706314791:cancelamento-queue"
+      }
+    ]
+  })
+}
+
+
 
 resource "aws_iam_role" "roleEKS-2" {
   name               = "roleEKS-2"
@@ -92,6 +115,12 @@ resource "aws_iam_role" "roleNodeSecrets-2" {
     ]
   })
 }
+
+resource "aws_iam_role_policy_attachment" "attach_policy_sqs_cancelamento" {
+  role       = aws_iam_role.roleNodeSecrets-2.name
+  policy_arn = aws_iam_policy.policy_sqs_cancelamento.arn
+}
+
 
 resource "aws_iam_role_policy_attachment" "policyEKSAmazonEKSClusterPolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
