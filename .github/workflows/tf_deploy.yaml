@@ -80,9 +80,9 @@ jobs:
             --namespace kube-system \
             --set clusterName=$EKS_CLUSTER_NAME \
             --set serviceAccount.create=false \
-            --set aws-vpc-id=vpc-06f9d8f53f94f2678 \
+            --set aws-vpc-id=vpc-0e69c256e36852d32 \
             --set region=$AWS_REGION \
-            --set vpcId=vpc-06f9d8f53f94f2678 \
+            --set vpcId=vpc-0e69c256e36852d32 \
             --set aws.region=$AWS_REGION \
             --set serviceAccount.name=aws-load-balancer-controller
 
